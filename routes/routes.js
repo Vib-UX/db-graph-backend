@@ -63,7 +63,7 @@ router.get('/user-model-info', async (req, res) => {
   try {
     const subscription = await Subscription.findOne({ tokenId }).populate('user model');
     console.log(subscription)
-    if (!subscription || subscription.user.wallet_address !== wallet_address) {
+    if (!subscription || subscription.user.wallet_address.toLowerCase() !== wallet_address.toLowerCase()) {
       return res.status(404).json({ success: false, message: 'No subscription matches the provided details' });
     }
 
