@@ -73,4 +73,18 @@ router.get('/user-model-info', async (req, res) => {
   }
 });
 
+router.get('/user-info', async (req, res) => {
+  const { wallet_address } = req.query;
+  try {
+    const user = await User.findOne({ wallet_address });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'User retrieved successfully', data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve user data', error: error.message });
+  }
+});
+
 module.exports = router;
