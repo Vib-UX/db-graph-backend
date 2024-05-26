@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Register a new user
 router.post('/register', async (req, res) => {
-  const { username, email, wallet_address } = req.body;
+  const { username, email, wallet_address, ipfs_url, openAi_tokenId } = req.body;
   try {
     // Validate if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }, { wallet_address }] });
@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Create new user
-    const newUser = new User({ username, email, wallet_address });
+    const newUser = new User({ username, email, wallet_address, ipfs_url, openAi_tokenId });
     await newUser.save();
     res.status(201).json({ success: true, message: 'User registered successfully', data: newUser });
   } catch (error) {
