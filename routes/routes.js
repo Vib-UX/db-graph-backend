@@ -42,7 +42,7 @@ router.post('/purchase-subscription', async (req, res) => {
         tokenId
       });
       await newSubscription.save();
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: 'Subscription purchased successfully',
         data: {
@@ -73,15 +73,39 @@ router.get('/user-model-info', async (req, res) => {
   }
 });
 
+// Route to get user information along with their subscriptions and associated model details
 router.get('/user-info', async (req, res) => {
   const { wallet_address } = req.query;
   try {
-    const user = await User.findOne({ wallet_address });
+    const user = await User.findOne({ wallet_address }).exec();
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.status(200).json({ success: true, message: 'User retrieved successfully', data: user });
+    // Fetch subscriptions and populate model details
+    const subscriptions = await Subscription.find({ user: user._id })
+      .populate({
+        path: 'model',
+        select: 'name modelId ipfsUrl' // Selecting specific fields from the Model
+      })
+      .exec();
+
+    // Construct a result object including user and their subscriptions with model details
+    const result = {
+      success: true,
+      message: 'User retrieved successfully',
+      data: {
+        user: user,
+        subscriptions: subscriptions.map(sub => ({
+          modelId: sub.model.modelId,
+          modelName: sub.model.name,
+          ipfsUrl: sub.model.ipfsUrl,
+          tokenId: sub.tokenId
+        }))
+      }
+    };
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to retrieve user data', error: error.message });
   }
