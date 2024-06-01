@@ -1,4 +1,3 @@
-// models/subscription.js
 const mongoose = require('mongoose');
 
 const subscriptionSchema = new mongoose.Schema({
@@ -15,6 +14,11 @@ const subscriptionSchema = new mongoose.Schema({
   tokenId: {
     type: String,
     required: true
+  },
+  isListed: {
+    type: Boolean,
+    required: true,
+    default: false 
   }
 });
 
