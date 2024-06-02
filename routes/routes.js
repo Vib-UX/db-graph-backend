@@ -86,11 +86,7 @@ router.get('/user-info-moonbeam', async (req, res) => {
       success: true,
       message: 'User retrieved successfully',
       data: {
-        user: {
-          userId: user._id, // Explicitly include user ID if needed elsewhere
-          username: user.username,
-          email: user.email
-        },
+        user,
         subscriptions: subscriptions.map(sub => ({
           modelId: sub.model.modelId,
           modelName: sub.model.name,
