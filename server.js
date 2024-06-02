@@ -19,8 +19,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .catch(err => console.error('MongoDB connection error:', err));
 
 //   SubscriptionMoonbeam.updateMany(
-//     { price: { $exists: false } }, // Filter to find documents where price does not exist
-//     { $set: { price: "10" } } // Set the price to "10" for all matched documents
+//     { listingId: { $exists: false } }, // Filter to find documents where price does not exist
+//     { $set: { listingId: "1" } } // Set the price to "10" for all matched documents
 // )
 // .then(result => {
 //     console.log(`Documents matched: ${result.n}`);

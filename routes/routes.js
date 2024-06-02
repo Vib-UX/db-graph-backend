@@ -333,10 +333,10 @@ router.post('/purchase-subscription-moonbeam', async (req, res) => {
 
 // List a subscription Moonbeam
 router.patch('/list-subscription-moonbeam', async (req, res) => {
-  const { tokenId, price } = req.body;
+  const { tokenId, price, listingId } = req.body;
   try {
     const updatedSubscription = await SubscriptionMoonbeam.findOneAndUpdate(
-      { tokenId, price },
+      { tokenId, price,listingId },
       { $set: { isListed: true } },
       { new: true }
     );
@@ -351,9 +351,9 @@ router.patch('/list-subscription-moonbeam', async (req, res) => {
 
 // Update subscription's user Moonbeam
 router.patch('/update-subscription-moonbeam', async (req, res) => {
-  const { tokenId, wallet_address } = req.body;
+  const { tokenId, email } = req.body;
   try {
-    const user = await User.findOne({ wallet_address });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
