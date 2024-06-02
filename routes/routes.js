@@ -54,7 +54,8 @@ router.get('/user-info', async (req, res) => {
           modelName: sub.model.name,
           ipfsUrl: sub.model.ipfsUrl,
           tokenId: sub.tokenId,
-          isListed: sub.isListed
+          isListed: sub.isListed,
+          price: sub.price
         }))
       }
     };
@@ -93,7 +94,8 @@ router.get('/user-info-moonbeam', async (req, res) => {
           modelName: sub.model.name,
           ipfsUrl: sub.model.ipfsUrl,
           tokenId: sub.tokenId,
-          isListed: sub.isListed
+          isListed: sub.isListed,
+          price: sub.price
         }))
       }
     };
@@ -331,10 +333,10 @@ router.post('/purchase-subscription-moonbeam', async (req, res) => {
 
 // List a subscription Moonbeam
 router.patch('/list-subscription-moonbeam', async (req, res) => {
-  const { tokenId } = req.body;
+  const { tokenId, price } = req.body;
   try {
     const updatedSubscription = await SubscriptionMoonbeam.findOneAndUpdate(
-      { tokenId },
+      { tokenId, price },
       { $set: { isListed: true } },
       { new: true }
     );

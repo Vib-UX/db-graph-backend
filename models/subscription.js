@@ -15,6 +15,10 @@ const subscriptionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  price:{
+    type: String,
+    required: false
+  },
   isListed: {
     type: Boolean,
     required: true,
