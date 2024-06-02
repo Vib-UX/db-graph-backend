@@ -334,20 +334,24 @@ router.post('/purchase-subscription-moonbeam', async (req, res) => {
 // List a subscription Moonbeam
 router.patch('/list-subscription-moonbeam', async (req, res) => {
   const { tokenId, price } = req.body;
+  console.log(`Updating subscription for tokenId: ${tokenId} with new price: ${price}`);
   try {
     const updatedSubscription = await SubscriptionMoonbeam.findOneAndUpdate(
-      { tokenId, price },
-      { $set: { isListed: true } },
+      { tokenId }, // Query only by tokenId
+      { $set: { price: price, isListed: true } }, // Update the price and isListed
       { new: true }
     );
     if (!updatedSubscription) {
+      console.log('Subscription not found in the database.');
       return res.status(404).json({ success: false, message: 'Subscription not found' });
     }
     res.status(200).json({ success: true, message: 'Subscription listed successfully', data: updatedSubscription });
   } catch (error) {
+    console.error('Error updating subscription:', error);
     res.status(500).json({ success: false, message: 'Failed to list subscription', error: error.message });
   }
 });
+
 
 // Update subscription's user Moonbeam
 router.patch('/update-subscription-moonbeam', async (req, res) => {
