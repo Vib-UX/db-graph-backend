@@ -355,9 +355,9 @@ router.patch('/list-subscription-moonbeam', async (req, res) => {
 
 // Update subscription's user Moonbeam
 router.patch('/update-subscription-moonbeam', async (req, res) => {
-  const { tokenId, wallet_address } = req.body;
+  const { tokenId, email } = req.body;
   try {
-    const user = await User.findOne({ wallet_address });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
