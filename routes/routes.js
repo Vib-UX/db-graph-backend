@@ -3,6 +3,7 @@ const express = require('express');
 const User = require('../models/user');
 const Model = require('../models/model');
 const Subscription = require('../models/subscription');
+const SubscriptionZkevm = require('../models/subscriptionZkevm')
 const router = express.Router();
 
 // Register a new user
@@ -155,6 +156,93 @@ router.patch('/update-subscription', async (req, res) => {
 router.get('/listed-subscriptions', async (req, res) => {
   try {
     const subscriptions = await Subscription.find({ isListed: true }).populate('model', 'modelId');
+    res.status(200).json({
+      success: true,
+      message: 'Listed subscriptions retrieved successfully',
+      data: subscriptions
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve listed subscriptions', error: error.message });
+  }
+});
+
+// Purchase a subscription Zkevm
+router.post('/purchase-subscription-zkevm', async (req, res) => {
+  const { email, modelId, tokenId } = req.body;
+  try {
+    // Ensure both user and model exist based on email and modelId
+    const userExists = await User.findOne({ email: email });
+    const modelExists = await Model.findOne({ modelId: modelId });
+    if (!userExists || !modelExists) {
+      return res.status(404).json({ success: false, message: 'User or Model not found with provided identifiers' });
+    }
+
+    // Create subscription using the ids from the fetched documents
+    const newSubscription = new SubscriptionZkevm({
+      user: userExists._id,
+      model: modelExists._id,
+      tokenId
+    });
+    await newSubscription.save();
+    res.status(200).json({
+      success: true,
+      message: 'Subscription purchased successfully',
+      data: {
+        userId: userExists._id,
+        modelId: modelExists._id,
+        tokenId
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to purchase subscription', error: error.message });
+  }
+});
+
+// List a subscription Zkemv
+router.patch('/list-subscription-zkevm', async (req, res) => {
+  const { tokenId } = req.body;
+  try {
+    const updatedSubscription = await SubscriptionZkevm.findOneAndUpdate(
+      { tokenId },
+      { $set: { isListed: true } },
+      { new: true }
+    );
+    if (!updatedSubscription) {
+      return res.status(404).json({ success: false, message: 'Subscription not found' });
+    }
+    res.status(200).json({ success: true, message: 'Subscription listed successfully', data: updatedSubscription });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to list subscription', error: error.message });
+  }
+});
+
+// Update subscription's user Zkevm
+router.patch('/update-subscription-zkevm', async (req, res) => {
+  const { tokenId, wallet_address } = req.body;
+  try {
+    const user = await User.findOne({ wallet_address });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const updatedSubscription = await SubscriptionZkevm.findOneAndUpdate(
+      { tokenId },
+      { $set: { user: user._id, isListed: false } },
+      { new: true }
+    );
+    if (!updatedSubscription) {
+      return res.status(404).json({ success: false, message: 'Subscription not found' });
+    }
+    res.status(200).json({ success: true, message: 'Subscription updated successfully', data: updatedSubscription });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update subscription', error: error.message });
+  }
+});
+
+// Fetch all listed subscriptions Zkevm
+router.get('/listed-subscriptions-zkevm', async (req, res) => {
+  try {
+    const subscriptions = await SubscriptionZkevm.find({ isListed: true }).populate('model', 'modelId');
     res.status(200).json({
       success: true,
       message: 'Listed subscriptions retrieved successfully',
