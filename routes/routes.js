@@ -53,7 +53,8 @@ router.get('/user-info', async (req, res) => {
           modelId: sub.model.modelId,
           modelName: sub.model.name,
           ipfsUrl: sub.model.ipfsUrl,
-          tokenId: sub.tokenId
+          tokenId: sub.tokenId,
+          isListed: sub.isListed
         }))
       }
     };
@@ -91,7 +92,8 @@ router.get('/user-info-moonbeam', async (req, res) => {
           modelId: sub.model.modelId,
           modelName: sub.model.name,
           ipfsUrl: sub.model.ipfsUrl,
-          tokenId: sub.tokenId
+          tokenId: sub.tokenId,
+          isListed: sub.isListed
         }))
       }
     };
