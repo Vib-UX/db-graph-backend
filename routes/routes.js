@@ -158,11 +158,11 @@ router.post('/purchase-subscription', async (req, res) => {
 
 // List a subscription
 router.patch('/list-subscription', async (req, res) => {
-  const { tokenId, listingId } = req.body;
+  const { tokenId, listingId,price } = req.body;
   try {
     const updatedSubscription = await Subscription.findOneAndUpdate(
       { tokenId },
-      { $set: { listingId, isListed: true } },
+      { $set: { price,listingId, isListed: true } },
       { new: true }
     );
     if (!updatedSubscription) {
