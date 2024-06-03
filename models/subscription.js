@@ -15,6 +15,10 @@ const subscriptionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  listingId: {
+    type: String,
+    required: false
+  },
   price:{
     type: String,
     required: false

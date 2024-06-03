@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const SubscriptionMoonbeam = require('./models/subscriptionMoonbeam')
+const Subscription = require('./models/subscription')
 require('dotenv').config();
 
 const app = express();
