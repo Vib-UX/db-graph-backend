@@ -6,6 +6,7 @@ const Subscription = require('../models/subscription');
 const SubscriptionZkevm = require('../models/subscriptionZkevm')
 const SubscriptionMoonbeam = require('../models/subscriptionMoonbeam')
 const SubscriptionMetis = require('../models/subscriptionMetis')
+const SubscriptionCardona = require('../models/subscriptionCardona')
 const router = express.Router();
 
 // Register a new user
@@ -118,6 +119,46 @@ router.get('/user-info-metis', async (req, res) => {
 
     // Fetch Metis-specific subscriptions and populate model details
     const subscriptions = await SubscriptionMetis.find({ user: user._id })
+      .populate({
+        path: 'model',
+        select: 'name modelId ipfsUrl' // Selecting specific fields from the Model
+      })
+      .exec();
+
+    // Construct a result object including user and their Moonbeam subscriptions with model details
+    const result = {
+      success: true,
+      message: 'User retrieved successfully',
+      data: {
+        user,
+        subscriptions: subscriptions.map(sub => ({
+          modelId: sub.model.modelId,
+          modelName: sub.model.name,
+          ipfsUrl: sub.model.ipfsUrl,
+          tokenId: sub.tokenId,
+          isListed: sub.isListed,
+          price: sub.price
+        }))
+      }
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve user data', error: error.message });
+  }
+});
+
+// Route to get user information based on email, along with their subscriptions and associated model details
+router.get('/user-info-cardona', async (req, res) => {
+  const { email } = req.query;
+  try {
+    const user = await User.findOne({ email }).exec(); // Search user by email
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Fetch Metis-specific subscriptions and populate model details
+    const subscriptions = await SubscriptionCardona.find({ user: user._id })
       .populate({
         path: 'model',
         select: 'name modelId ipfsUrl' // Selecting specific fields from the Model
@@ -522,8 +563,96 @@ router.get('/listed-subscriptions-metis', async (req, res) => {
   }
 });
 
+// Purchase a subscription Metis
+router.post('/purchase-subscription-cardona', async (req, res) => {
+  const { email, modelId, tokenId } = req.body;
+  try {
+    // Ensure both user and model exist based on email and modelId
+    const userExists = await User.findOne({ email: email });
+    const modelExists = await Model.findOne({ modelId: modelId });
+    if (!userExists || !modelExists) {
+      return res.status(404).json({ success: false, message: 'User or Model not found with provided identifiers' });
+    }
+
+    // Create subscription using the ids from the fetched documents
+    const newSubscription = new SubscriptionCardona({
+      user: userExists._id,
+      model: modelExists._id,
+      tokenId
+    });
+    await newSubscription.save();
+    res.status(200).json({
+      success: true,
+      message: 'Subscription purchased successfully',
+      data: {
+        userId: userExists._id,
+        modelId: modelExists._id,
+        tokenId
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to purchase subscription', error: error.message });
+  }
+});
+
+// List a subscription Cardona
+router.patch('/list-subscription-cardona', async (req, res) => {
+  const { tokenId, price } = req.body;
+  console.log(`Updating subscription for tokenId: ${tokenId} with new price: ${price}`);
+  try {
+    const updatedSubscription = await SubscriptionCardona.findOneAndUpdate(
+      { tokenId }, // Query only by tokenId
+      { $set: { price: price, isListed: true } }, // Update the price and isListed
+      { new: true }
+    );
+    if (!updatedSubscription) {
+      console.log('Subscription not found in the database.');
+      return res.status(404).json({ success: false, message: 'Subscription not found' });
+    }
+    res.status(200).json({ success: true, message: 'Subscription listed successfully', data: updatedSubscription });
+  } catch (error) {
+    console.error('Error updating subscription:', error);
+    res.status(500).json({ success: false, message: 'Failed to list subscription', error: error.message });
+  }
+});
 
 
+// Update subscription's user Cardona
+router.patch('/update-subscription-cardona', async (req, res) => {
+  const { tokenId, email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const updatedSubscription = await SubscriptionCardona.findOneAndUpdate(
+      { tokenId },
+      { $set: { user: user._id, isListed: false } },
+      { new: true }
+    );
+    if (!updatedSubscription) {
+      return res.status(404).json({ success: false, message: 'Subscription not found' });
+    }
+    res.status(200).json({ success: true, message: 'Subscription updated successfully', data: updatedSubscription });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update subscription', error: error.message });
+  }
+});
+
+// Fetch all listed subscriptions Cardona
+router.get('/listed-subscriptions-cardona', async (req, res) => {
+  try {
+    const subscriptions = await SubscriptionCardona.find({ isListed: true }).populate('model', 'modelId');
+    res.status(200).json({
+      success: true,
+      message: 'Listed subscriptions retrieved successfully',
+      data: subscriptions
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve listed subscriptions', error: error.message });
+  }
+});
 
 
 module.exports = router;
